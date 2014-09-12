@@ -5,6 +5,11 @@
  n_cellz = 128
  max_grid_size = 128
 
+ ! block size inside a box
+ tb_blocksize_x = -1   ! no blocking in x-direction
+ tb_blocksize_y = 16
+ tb_blocksize_z = 16
+
  verbose = 2
 
  stop_time = 3.d-3

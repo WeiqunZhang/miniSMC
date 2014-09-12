@@ -173,7 +173,7 @@ contains
     double precision, intent(inout), optional :: courno
 
     integer :: lo(3), hi(3)
-    integer :: n
+    integer :: n, iblock
 
     logical :: update_courno
     double precision :: courno_proc
@@ -240,7 +240,7 @@ contains
     !
     ! Hyperbolic and Transport terms
     !
-    !$omp parallel private(n,lo,hi,up,ulo,uhi,upp,uplo,uphi) &
+    !$omp parallel private(n,iblock,lo,hi,up,ulo,uhi,upp,uplo,uphi) &
     !$omp private(qp,qlo,qhi,mup,xip,lamp,Ddp)
     do n=1,nfabs(Q)
 
@@ -261,14 +261,17 @@ contains
        uplo = lbound(upp)
        uphi = ubound(upp)
 
-       lo = tb_get_valid_lo(n)
-       hi = tb_get_valid_hi(n)
+       do iblock = 1, tb_get_nblocks(n)
+          lo = tb_get_block_lo(iblock,n)
+          hi = tb_get_block_hi(iblock,n)
 
-       call narrow_diffterm_3d(lo,hi,dx,qp,qlo(1:3),qhi(1:3),upp,uplo(1:3),uphi(1:3), &
-            mup,xip,lamp,Ddp)
+          call narrow_diffterm_3d(lo,hi,dx,qp,qlo(1:3),qhi(1:3),upp,uplo(1:3),uphi(1:3), &
+               mup,xip,lamp,Ddp)
        
-       call hypterm_3d(lo,hi,dx,up,ulo(1:3),uhi(1:3),qp,qlo(1:3),qhi(1:3),&
-            upp,uplo(1:3),uphi(1:3))
+          call hypterm_3d(lo,hi,dx,up,ulo(1:3),uhi(1:3),qp,qlo(1:3),qhi(1:3),&
+               upp,uplo(1:3),uphi(1:3))
+
+       end do
 
     end do
     !$omp end parallel

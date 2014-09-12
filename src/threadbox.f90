@@ -16,12 +16,21 @@ module threadbox_module
   integer, allocatable, save :: tb_lo(:,:), tb_hi(:,:) 
   integer, allocatable, save :: tb_glo(:,:), tb_ghi(:,:) 
 
-  !$omp threadprivate(worktodo,tb_lo,tb_hi,tb_glo,tb_ghi)
+  type blocks  ! in_a_threadbox
+     integer :: nblocks
+     integer, pointer :: lo(:,:) => Null()
+     integer, pointer :: hi(:,:) => Null()
+  end type blocks
+
+  type(blocks), allocatable, save :: allblocks(:)
+
+  !$omp threadprivate(worktodo,tb_lo,tb_hi,tb_glo,tb_ghi,allblocks)
 
   private
 
   public ::build_threadbox, destroy_threadbox,  &
        tb_get_valid_lo, tb_get_valid_hi, tb_get_grown_lo, tb_get_grown_hi, &
+       tb_get_block_lo, tb_get_block_hi, tb_get_nblocks, &
        tb_multifab_setval, tb_worktodo
 
 contains
@@ -29,6 +38,17 @@ contains
   subroutine destroy_threadbox()
     integer :: ibox
     !$omp parallel private(ibox)
+    if (allocated(allblocks)) then
+       do ibox=1,nb
+          if (associated(allblocks(ibox)%lo)) then
+             deallocate(allblocks(ibox)%lo)
+          end if
+          if (associated(allblocks(ibox)%hi)) then
+             deallocate(allblocks(ibox)%hi)
+          end if
+       end do
+       deallocate(allblocks)
+    end if
     if (allocated(tb_lo)) deallocate(tb_lo)
     if (allocated(tb_hi)) deallocate(tb_hi)
     if (allocated(tb_glo)) deallocate(tb_glo)
@@ -38,7 +58,8 @@ contains
   end subroutine destroy_threadbox
 
   subroutine build_threadbox(la, ng_in)
-    use probin_module, only : tb_split_dim, tb_collapse_boxes, tb_idim_more, tb_idim_less
+    use probin_module, only : tb_split_dim, tb_collapse_boxes, tb_idim_more, tb_idim_less, &
+         tb_blocksize_x, tb_blocksize_y, tb_blocksize_z
     implicit none
     type(layout), intent(in) :: la
     integer, intent(in) :: ng_in
@@ -74,6 +95,7 @@ contains
     allocate(tb_glo(3,nb))
     allocate(tb_ghi(3,nb))
     allocate(worktodo(nb))
+    allocate(allblocks(nb))
 
     !$omp single
     call setup_boxgroups(tb_collapse_boxes) 
@@ -91,6 +113,8 @@ contains
     call init_worktodo() 
 
     call init_threadbox(la)
+
+    call init_allblocks(tb_blocksize_x,tb_blocksize_y,tb_blocksize_z)
 
     !$omp end parallel
 
@@ -370,6 +394,82 @@ contains
     
   end subroutine split_domain
 
+
+  subroutine init_allblocks(blksizex,blksizey,blksizez)
+    implicit none
+    integer,intent(in) :: blksizex,blksizey,blksizez
+    integer :: idim, ibox, nbk(3), tbsize(3)
+    integer :: i,j,k,ibk,nblk
+    integer :: bksize(3), zero_lo(3), zero_hi(3)
+    integer, allocatable :: xsize(:), ysize(:), zsize(:)
+    integer, allocatable :: xstart(:), ystart(:), zstart(:)
+
+    bksize(1) = blksizex
+    bksize(2) = blksizey
+    bksize(3) = blksizez
+
+    do ibox=1,nb
+
+       if (.not. worktodo(ibox)) then
+
+          allblocks(ibox)%nblocks = 0
+
+       else
+
+          tbsize = tb_hi(:,ibox) - tb_lo(:,ibox) + 1
+
+          do idim=1,3
+             if (bksize(idim) <= 0) then
+                nbk(idim) = 1
+             else
+                nbk(idim) = max(int(tbsize(idim)/bksize(idim)),1)
+             end if
+          end do
+
+          nblk = nbk(1)*nbk(2)*nbk(3)
+          allblocks(ibox)%nblocks = nblk
+          allocate(allblocks(ibox)%lo(3,nblk))
+          allocate(allblocks(ibox)%hi(3,nblk))
+
+          allocate(xsize (nbk(1)))
+          allocate(ysize (nbk(2)))
+          allocate(zsize (nbk(3)))
+          allocate(xstart(nbk(1)))
+          allocate(ystart(nbk(2)))
+          allocate(zstart(nbk(3)))
+
+          call split_domain(tbsize(1), nbk(1), xsize, xstart)
+          call split_domain(tbsize(2), nbk(2), ysize, ystart)
+          call split_domain(tbsize(3), nbk(3), zsize, zstart)
+
+          ibk = 1
+          do k = 1, nbk(3)
+             do j = 1, nbk(2)
+                do i = 1, nbk(1)
+
+                   zero_lo(1) = xstart(i)
+                   zero_lo(2) = ystart(j)
+                   zero_lo(3) = zstart(k)
+                   zero_hi(1) = xstart(i) + xsize(i) - 1
+                   zero_hi(2) = ystart(j) + ysize(j) - 1
+                   zero_hi(3) = zstart(k) + zsize(k) - 1
+
+                   allblocks(ibox)%lo(:,ibk) = zero_lo + tb_lo(:,ibox)
+                   allblocks(ibox)%hi(:,ibk) = zero_hi + tb_lo(:,ibox)
+
+                   ibk = ibk + 1
+                end do
+             end do
+          end do
+
+          deallocate(xsize,ysize,zsize,xstart,ystart,zstart)
+
+       end if
+    end do
+
+  end subroutine init_allblocks
+
+
   function tb_get_valid_lo(ilocal) result (lo)
     implicit none
     integer, intent(in) :: ilocal
@@ -398,6 +498,28 @@ contains
     integer, dimension(3) :: hi
     hi = tb_ghi(:,ilocal)
   end function tb_get_grown_hi
+
+
+  function tb_get_nblocks(ilocal) result (nblk)
+    implicit none
+    integer, intent(in) :: ilocal
+    integer :: nblk
+    nblk = allblocks(ilocal)%nblocks
+  end function tb_get_nblocks
+
+  function tb_get_block_lo(iblock, ilocal) result(lo)
+    implicit none
+    integer, intent(in) :: iblock, ilocal
+    integer, dimension(3) :: lo
+    lo = allblocks(ilocal)%lo(:,iblock)
+  end function tb_get_block_lo
+
+  function tb_get_block_hi(iblock, ilocal) result(hi)
+    implicit none
+    integer, intent(in) :: iblock, ilocal
+    integer, dimension(3) :: hi
+    hi = allblocks(ilocal)%hi(:,iblock)
+  end function tb_get_block_hi
 
 
   subroutine tb_multifab_setval(mf, val, all)

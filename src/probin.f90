@@ -31,6 +31,9 @@ module probin_module
   logical, save, public :: tb_collapse_boxes = .false.
   integer, save, public :: tb_idim_more = 2
   integer, save, public :: tb_idim_less = 1
+  integer, save, public :: tb_blocksize_x = -1
+  integer, save, public :: tb_blocksize_y = 16
+  integer, save, public :: tb_blocksize_z = 16
 
   ! These will be allocated and defined below
   logical,    allocatable, save, public :: pmask(:)
@@ -72,6 +75,9 @@ module runtime_init_module
   namelist /probin/ tb_collapse_boxes
   namelist /probin/ tb_idim_more
   namelist /probin/ tb_idim_less
+  namelist /probin/ tb_blocksize_x
+  namelist /probin/ tb_blocksize_y
+  namelist /probin/ tb_blocksize_z
 
   private
 

@@ -89,6 +89,15 @@ list of selected runtime parameters and default values.
   domain decomposition is in y and z-directions; when it is 3, the
   domain decomposition is in 3D.
 
+* tb_blocksize_x = -1
+* tb_blocksize_y = 16
+* tb_blocksize_z = 16
+
+  SMC uses a blocking strategy.  These parameters determines blocking
+  size in x, y and z-directions.  The value should be either greater
+  than or equal to 4, or less than 0.  If it is less than 0, no
+  blocking is used in that direction.
+
 * verbose = 0
 
   This determines verbosity.
