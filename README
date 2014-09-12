@@ -39,6 +39,16 @@ specified in the GNUmakefile:
 * MIC :=
   Set this if compiling for Intel Xeon Phi.
 
+* K_USE_AUTOMATIC := t
+  This determines whether some arrays in kernels.F90 will be automatic
+  or allocatable.  Automatic arrays are usually on the stack.
+  When OpenMP is used, allocating memory on the stack is usually
+  faster than on the heap.  However, one must make sure there is
+  adequate space on the stack; otherwise a segmentation fault might
+  occur.  Note that the size of the stack for threads can be adjusted
+  by the OMP_STACKSIZE environment variable and the shell might also
+  impose a limit on stack size.
+
 * MKVERBOSE := t
   This determines the verbosity of the building process.
 

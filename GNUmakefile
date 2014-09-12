@@ -11,9 +11,11 @@ NDEBUG := t
 COMP := GNU
 # COMP := Intel
 
+K_USE_AUTOMATIC := t
+
 ### 
 ifdef MPI
-  # Set USE_MPI_WRAPPERS := t to use mpif90 or mpiifot, 
+  # Set USE_MPI_WRAPPERS := t to use mpif90 or mpiifort, 
   # otherwise you need to specify mpi_include_dir, mpi_lib_dir, and mpi_libraries.
   USE_MPI_WRAPPERS := t
   ifndef USE_MPI_WRAPPERS
@@ -75,6 +77,12 @@ libraries =
 
 fpp_flags =
 fld_flags =
+
+ifdef K_USE_AUTOMATIC
+  F90PPFLAGS += -DK_USE_AUTOMATIC
+else
+  F90PPFLAGS =
+endif
 
 ifeq ($(wildcard comps/$(COMP).mak),)
    $(error "comps/$(COMP).mak does not exist")   

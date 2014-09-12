@@ -20,11 +20,18 @@ contains
 
     integer          :: i,j,k,n
     double precision :: dxinv(3)
+
+#ifdef K_USE_AUTOMATIC
+    double precision :: tmpx(lo(1)-4:hi(1)+4)
+    double precision :: tmpy(lo(1)  :hi(1)  ,lo(2)-4:hi(2)+4)
+    double precision :: tmpz(lo(1)  :hi(1)  ,lo(2)  :hi(2)  ,lo(3)-4:hi(3)+4)
+#else
     double precision, allocatable :: tmpx(:), tmpy(:,:),tmpz(:,:,:)
 
     allocate(tmpx(lo(1)-4:hi(1)+4))
     allocate(tmpy(lo(1)  :hi(1)  ,lo(2)-4:hi(2)+4))
     allocate(tmpz(lo(1)  :hi(1)  ,lo(2)  :hi(2)  ,lo(3)-4:hi(3)+4))
+#endif
 
     do i=1,3
        dxinv(i) = 1.0d0 / dx(i)
@@ -317,7 +324,9 @@ contains
        enddo
     enddo
 
+#ifndef K_USE_AUTOMATIC
     deallocate(tmpx,tmpy,tmpz)
+#endif
 
   end subroutine hypterm_3d
 
@@ -335,9 +344,14 @@ contains
 
     integer :: i, dlo(3), dhi(3)
     double precision :: dxinv(3), dx2inv(3)
+
+#ifdef K_USE_AUTOMATIC
+    double precision :: rhs(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),ncons)
+#else
     double precision, allocatable :: rhs(:,:,:,:)
 
     allocate(rhs(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),ncons))
+#endif
 
     do i = 1,3
        dxinv(i) = 1.0d0 / dx(i)
@@ -357,7 +371,9 @@ contains
          rhs_g(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),:) &
          + rhs(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),:)
 
+#ifndef K_USE_AUTOMATIC
     deallocate(rhs)
+#endif
 
   end subroutine narrow_diffterm_3d
 
@@ -375,6 +391,21 @@ contains
     !
     integer          :: i,j,k
     double precision, dimension(lo(1):hi(1)) :: tauxx,tauyy,tauzz,divu
+#ifdef K_USE_AUTOMATIC
+    double precision :: ux  ( lo(1): hi(1),dlo(2):dhi(2),dlo(3):dhi(3))
+    double precision :: vx  ( lo(1): hi(1),dlo(2):dhi(2),dlo(3):dhi(3))
+    double precision :: wx  ( lo(1): hi(1),dlo(2):dhi(2),dlo(3):dhi(3))
+    double precision :: uy  (dlo(1):dhi(1), lo(2): hi(2),dlo(3):dhi(3))
+    double precision :: vy  (dlo(1):dhi(1), lo(2): hi(2),dlo(3):dhi(3))
+    double precision :: wy  (dlo(1):dhi(1), lo(2): hi(2),dlo(3):dhi(3))
+    double precision :: uz  (dlo(1):dhi(1),dlo(2):dhi(2), lo(3): hi(3))
+    double precision :: vz  (dlo(1):dhi(1),dlo(2):dhi(2), lo(3): hi(3))
+    double precision :: wz  (dlo(1):dhi(1),dlo(2):dhi(2), lo(3): hi(3))
+    double precision :: vsm (dlo(1):dhi(1),dlo(2):dhi(2),dlo(3):dhi(3))
+    double precision :: tmpx(dlo(1):dhi(1))
+    double precision :: tmpy( lo(1): hi(1),dlo(2):dhi(2))
+    double precision :: tmpz( lo(1): hi(1), lo(2): hi(2),dlo(3):dhi(3))
+#else
     double precision, allocatable, dimension(:,:,:) :: ux,uy,uz,vx,vy,vz,wx,wy,wz
     double precision, allocatable :: tmpx(:), tmpy(:,:),tmpz(:,:,:)
     double precision, allocatable, dimension(:,:,:) :: vsm
@@ -396,6 +427,7 @@ contains
     allocate(tmpx(dlo(1):dhi(1)))
     allocate(tmpy( lo(1): hi(1),dlo(2):dhi(2)))
     allocate(tmpz( lo(1): hi(1), lo(2): hi(2),dlo(3):dhi(3)))
+#endif
 
     do k=dlo(3),dhi(3)
        do j=dlo(2),dhi(2)
@@ -675,9 +707,11 @@ contains
        end do
     end do
 
+#ifndef K_USE_AUTOMATIC
     deallocate(tmpx,tmpy,tmpz)
     deallocate(vsm)
     deallocate(ux,uy,uz,vx,vy,vz,wx,wy,wz)
+#endif
 
   end subroutine diffterm_1
 
@@ -699,6 +733,20 @@ contains
     double precision :: mmtmp(8,lo(1):hi(1)+1)
     double precision :: ene_c
 
+#ifdef K_USE_AUTOMATIC
+    double precision :: vsp(dlo(1):dhi(1),dlo(2):dhi(2),dlo(3):dhi(3))
+    double precision :: dpy(dlo(1):dhi(1),dlo(2):dhi(2),dlo(3):dhi(3),nspecies)
+    double precision :: dxe(dlo(1):dhi(1),dlo(2):dhi(2),dlo(3):dhi(3),nspecies)
+    double precision :: dpe(dlo(1):dhi(1),dlo(2):dhi(2),dlo(3):dhi(3))
+
+    double precision :: Hg(lo(1):hi(1)+1,lo(2):hi(2)+1,lo(3):hi(3)+1,2:ncons)
+
+    double precision :: M8p (8,lo(1):hi(1)+1,lo(2):hi(2)+1,lo(3):hi(3)+1)
+
+    double precision :: sumdrY(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))
+    double precision :: sumrYv(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))
+    double precision :: gradp (lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))
+#else
     double precision, allocatable, dimension(:,:,:) :: vsp, dpe
     double precision, allocatable, dimension(:,:,:,:) :: Hg, dpy, dxe
     ! dxy: diffusion coefficient of X in equation for Y
@@ -722,6 +770,7 @@ contains
     allocate(sumdrY(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3)))
     allocate(sumrYv(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3)))
     allocate(gradp (lo(1):hi(1),lo(2):hi(2),lo(3):hi(3)))
+#endif
 
     do k=dlo(3),dhi(3)
        do j=dlo(2),dhi(2)
@@ -2115,8 +2164,10 @@ contains
        end do
     end do
 
+#ifndef K_USE_AUTOMATIC
     deallocate(Hg,dpy,dxe,dpe,vsp,M8p)
     deallocate(sumdrY,sumryv,gradp)
+#endif
 
   end subroutine diffterm_2
 
