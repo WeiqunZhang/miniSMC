@@ -74,10 +74,6 @@ module multifab_module
      module procedure multifab_ncomp
   end interface
 
-  interface setval
-     module procedure multifab_setval
-  end interface setval
-
   private :: cpy_d
   private :: reshape_d_4_1, reshape_d_1_4
   private :: mf_fb_fancy_double, mf_fb_easy_double
@@ -450,51 +446,5 @@ contains
     logical, intent(in), optional :: cross
     call multifab_fill_boundary_c(mf, 1, mf%nc, ng, cross, idim)
   end subroutine multifab_fill_boundary
-
-
-  subroutine multifab_setval(mf, val, all)
-    type(multifab), intent(inout) :: mf
-    real(dp_t), intent(in) :: val
-    logical, intent(in), optional :: all
-
-    logical :: lall
-    integer :: i, j, k, m, n, lo(3), hi(3), ng, nc
-    double precision, pointer :: p(:,:,:,:)
-
-    if (present(all)) then
-       lall = all
-    else
-       lall = .false.
-    end if
-
-    if (lall) then
-       ng = nghost(mf)
-    else
-       ng = 0
-    end if
-
-    nc = ncomp(mf)
-
-    do n = 1, nfabs(mf)
-
-       p => dataptr(mf,n)
-
-       lo = lwb(get_box(mf,n))
-       hi = upb(get_box(mf,n))
-
-       !$omp parallel do private(i,j,k,m) collapse(3)
-       do m = 1, nc
-          do k = lo(3)-ng,hi(3)+ng
-             do j = lo(2)-ng,hi(2)+ng
-                do i = lo(1)-ng,hi(1)+ng
-                   p(i,j,k,m) = val
-                end do
-             end do
-          end do
-       end do
-       !$omp end parallel do
-    end do
-
-  end subroutine multifab_setval
   
 end module multifab_module

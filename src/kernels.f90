@@ -22,21 +22,16 @@ contains
     double precision :: dxinv(3)
     double precision, allocatable :: tmpx(:), tmpy(:,:),tmpz(:,:,:)
 
+    allocate(tmpx(lo(1)-4:hi(1)+4))
+    allocate(tmpy(lo(1)  :hi(1)  ,lo(2)-4:hi(2)+4))
     allocate(tmpz(lo(1)  :hi(1)  ,lo(2)  :hi(2)  ,lo(3)-4:hi(3)+4))
 
     do i=1,3
        dxinv(i) = 1.0d0 / dx(i)
     end do
 
-    !$omp parallel private(i,j,k,n,tmpx,tmpy)
-
-    allocate(tmpx(lo(1)-4:hi(1)+4))
-    allocate(tmpy(lo(1)  :hi(1)  ,lo(2)-4:hi(2)+4))
-    
-
     ! ------- BEGIN x-direction -------
 
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
 
@@ -94,9 +89,7 @@ contains
 
        end do
     end do
-    !$omp end do
 
-    !$omp do collapse(2)
     do n = iry1, iry1+nspecies-1
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)
@@ -115,13 +108,11 @@ contains
           enddo
        enddo
     enddo
-    !$omp end do
 
     ! ------- END x-direction -------
 
     ! ------- BEGIN y-direction -------
 
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -193,9 +184,7 @@ contains
           enddo
        enddo
     enddo
-    !$omp end do
 
-    !$omp do collapse(2)
     do n = iry1, iry1+nspecies-1
        do k=lo(3),hi(3)
           do j=lo(2)-4,hi(2)+4
@@ -214,13 +203,11 @@ contains
           enddo
        enddo
     enddo
-    !$omp end do
 
     ! ------- END y-direction -------
 
     ! ------- BEGIN z-direction -------
 
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -232,9 +219,7 @@ contains
           end do
        end do
     end do
-    !$omp end do nowait
 
-    !$omp do
     do k=lo(3)-4,hi(3)+4
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -242,8 +227,6 @@ contains
           end do
        end do
     end do
-    !$omp end do
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -255,9 +238,7 @@ contains
           end do
        end do
     end do
-    !$omp end do
 
-    !$omp do
     do k=lo(3)-4,hi(3)+4
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -265,8 +246,6 @@ contains
           end do
        end do
     end do
-    !$omp end do
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -278,9 +257,7 @@ contains
           end do
        end do
     end do
-    !$omp end do
 
-    !$omp do
     do k=lo(3)-4,hi(3)+4
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -288,8 +265,6 @@ contains
           end do
        end do
     end do
-    !$omp end do
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -301,9 +276,7 @@ contains
           end do
        end do
     end do
-    !$omp end do
 
-    !$omp do
     do k=lo(3)-4,hi(3)+4
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -311,8 +284,6 @@ contains
           end do
        end do
     end do
-    !$omp end do
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -324,10 +295,8 @@ contains
           end do
        end do
     end do
-    !$omp end do
 
     do n = iry1, iry1+nspecies-1
-       !$omp do
        do k=lo(3)-4,hi(3)+4
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)
@@ -335,8 +304,6 @@ contains
              end do
           end do
        end do
-       !$omp end do
-       !$omp do
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)
@@ -348,14 +315,9 @@ contains
              end do
           enddo
        enddo
-       !$omp end do
     enddo
 
-    deallocate(tmpx,tmpy)
-
-    !$omp end parallel
-
-    deallocate(tmpz)
+    deallocate(tmpx,tmpy,tmpz)
 
   end subroutine hypterm_3d
 
@@ -431,14 +393,10 @@ contains
 
     allocate(vsm(dlo(1):dhi(1),dlo(2):dhi(2),dlo(3):dhi(3)))
 
-    allocate(tmpz( lo(1): hi(1), lo(2): hi(2),dlo(3):dhi(3)))
-
-    !$omp parallel private(i,j,k,tauxx,tauyy,tauzz,divu,tmpx,tmpy)
-
     allocate(tmpx(dlo(1):dhi(1)))
     allocate(tmpy( lo(1): hi(1),dlo(2):dhi(2)))
+    allocate(tmpz( lo(1): hi(1), lo(2): hi(2),dlo(3):dhi(3)))
 
-    !$omp do
     do k=dlo(3),dhi(3)
        do j=dlo(2),dhi(2)
           do i=dlo(1),dhi(1)
@@ -446,9 +404,7 @@ contains
           enddo
        enddo
     enddo
-    !$omp end do nowait
 
-    !$omp do
     do k=dlo(3),dhi(3)
        do j=dlo(2),dhi(2)
           do i=lo(1),hi(1)
@@ -470,9 +426,7 @@ contains
           enddo
        enddo
     enddo
-    !$omp end do nowait
 
-    !$omp do
     do k=dlo(3),dhi(3)
        do j=lo(2),hi(2)   
 
@@ -496,9 +450,7 @@ contains
 
        enddo
     enddo
-    !$omp end do nowait
 
-    !$omp do
     do k=lo(3),hi(3)
        do j=dlo(2),dhi(2)    
           do i=dlo(1),dhi(1)
@@ -520,12 +472,10 @@ contains
           end do      
        end do
     end do
-    !$omp end do
 
     !----- mx -----
 
     !----- mx : d()/dx -----
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
 
@@ -543,10 +493,8 @@ contains
 
        end do
     end do
-    !$omp end do
 
     !----- mx : d()/dy -----
-    !$omp do
     do k=lo(3),hi(3)
 
        do j=lo(2)-4,hi(2)+4
@@ -566,10 +514,8 @@ contains
        end do
 
     end do
-    !$omp end do
 
     !----- mx : d()/dz -----
-    !$omp do
     do k=lo(3)-4,hi(3)+4
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -577,8 +523,6 @@ contains
           end do
        end do
     end do
-    !$omp end do
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -590,11 +534,9 @@ contains
           end do
        end do
     end do
-    !$omp end do
 
     !----- my -----
 
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
 
@@ -612,9 +554,7 @@ contains
 
        end do
     end do
-    !$omp end do
 
-    !$omp do
     do k=lo(3),hi(3)
 
        do j=lo(2)-4,hi(2)+4
@@ -634,9 +574,7 @@ contains
        end do
 
     end do
-    !$omp end do
 
-    !$omp do
     do k=lo(3)-4,hi(3)+4
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -644,8 +582,6 @@ contains
           end do
        end do
     end do
-    !$omp end do
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -657,11 +593,9 @@ contains
           end do
        end do
     end do
-    !$omp end do
 
     !----- mz -----
 
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
 
@@ -679,9 +613,7 @@ contains
 
        end do
     end do
-    !$omp end do
 
-    !$omp do
     do k=lo(3),hi(3)
 
        do j=lo(2)-4,hi(2)+4
@@ -701,9 +633,7 @@ contains
        end do
 
     end do
-    !$omp end do 
 
-    !$omp do
     do k=lo(3)-4,hi(3)+4
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -711,8 +641,6 @@ contains
           end do
        end do
     end do
-    !$omp end do
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -724,11 +652,9 @@ contains
           end do
        end do
     end do
-    !$omp end do nowait
 
     !----- energy -----
 
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -748,13 +674,8 @@ contains
           end do
        end do
     end do
-    !$omp end do
 
-    deallocate(tmpx,tmpy)
-
-    !$omp end parallel
-
-    deallocate(tmpz)
+    deallocate(tmpx,tmpy,tmpz)
     deallocate(vsm)
     deallocate(ux,uy,uz,vx,vy,vz,wx,wy,wz)
 
@@ -802,9 +723,6 @@ contains
     allocate(sumrYv(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3)))
     allocate(gradp (lo(1):hi(1),lo(2):hi(2),lo(3):hi(3)))
 
-    !$omp parallel private(i,j,k,n,qxn,qyn,qhn,iryn,mmtmp,ene_c)
-
-    !$omp do
     do k=dlo(3),dhi(3)
        do j=dlo(2),dhi(2)
           do i=dlo(1),dhi(1)
@@ -812,17 +730,13 @@ contains
           enddo
        enddo
     enddo
-    !$omp end do nowait
 
-    !$omp workshare
     dpe = 0.d0
-    !$omp end workshare
 
     do n=1,nspecies
        qxn = qx1+n-1
        qyn = qy1+n-1
        qhn = qh1+n-1
-       !$omp do
        do k=dlo(3),dhi(3)
           do j=dlo(2),dhi(2)
              do i=dlo(1),dhi(1)
@@ -832,12 +746,10 @@ contains
              end do
           end do
        end do
-       !$omp end do
     end do
 
     ! ------- BEGIN x-direction -------
 
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)+1
@@ -903,9 +815,7 @@ contains
           end do
        end do
     end do
-    !$omp end do
 
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)+1
@@ -977,9 +887,7 @@ contains
           end do
        end do
     end do
-    !$omp end do
 
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)+1
@@ -1045,9 +953,7 @@ contains
           end do
        end do
     end do
-    !$omp end do
 
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)+1
@@ -1116,7 +1022,6 @@ contains
           end do
        end do
     end do
-    !$omp end do
 
     do n = 1, nspecies
 
@@ -1125,7 +1030,6 @@ contains
        qxn = qx1+n-1
        iryn = iry1+n-1
 
-       !$omp do
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)+1 
@@ -1138,9 +1042,7 @@ contains
              end do
           end do
        end do
-       !$omp end do
 
-       !$omp do
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)    
              do i=lo(1),hi(1)+1
@@ -1213,12 +1115,10 @@ contains
              end do
           end do
        end do
-       !$omp end do
     end do
 
     ! add x-direction rhs
 
-    !$omp do collapse(2)
     do n=2,iene
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)
@@ -1228,16 +1128,12 @@ contains
           end do
        end do
     end do
-    !$omp end do
-
-    !$omp workshare
+       
     sumdrY = 0.d0
-    !$omp end workshare
     do n=iry1,ncons
 
        if (n.eq.iry_ias) cycle
 
-       !$omp do
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)
@@ -1246,11 +1142,9 @@ contains
              end do
           end do
        end do
-       !$omp end do nowait
 
     end do
 
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -1263,17 +1157,13 @@ contains
           end do
        end do
     end do
-    !$omp end do
-    
-    !$omp workshare
+       
     sumryv = 0.d0
-    !$omp end workshare
     do n = 1, nspecies
 
        if (n.eq.iias) cycle
 
        qxn = qx1+n-1
-       !$omp do
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)
@@ -1287,7 +1177,6 @@ contains
              end do
           end do
        end do
-       !$omp end do
 
     end do
 
@@ -1295,7 +1184,6 @@ contains
     qhn = qh1+n-1
     iryn = iry1+n-1
     
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -1309,13 +1197,11 @@ contains
           end do
        end do
     end do
-    !$omp end do
 
     ! ------- END x-direction -------
 
     ! ------- BEGIN y-direction -------
 
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)+1
           do i=lo(1),hi(1)             
@@ -1387,9 +1273,7 @@ contains
           end do
        end do
     end do
-    !$omp end do
 
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)+1
           do i=lo(1),hi(1)
@@ -1455,9 +1339,7 @@ contains
           end do
        end do
     end do
-    !$omp end do
 
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)+1
           do i=lo(1),hi(1)
@@ -1523,9 +1405,7 @@ contains
           end do
        end do
     end do
-    !$omp end do
 
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)+1
           do i=lo(1),hi(1)
@@ -1594,7 +1474,6 @@ contains
           end do
        end do
     end do
-    !$omp end do
 
     do n = 1, nspecies
 
@@ -1603,7 +1482,6 @@ contains
        qxn = qx1+n-1
        iryn = iry1+n-1
 
-       !$omp do
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)+1
              do i=lo(1),hi(1) 
@@ -1616,9 +1494,7 @@ contains
              end do
           end do
        end do
-       !$omp end do
        
-       !$omp do
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)+1
              do i=lo(1),hi(1)
@@ -1691,13 +1567,11 @@ contains
              end do
           end do
        end do
-       !$omp end do
 
     end do
        
     ! add y-direction rhs
 
-    !$omp do collapse(2)
     do n=2,iene
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)
@@ -1707,16 +1581,12 @@ contains
           end do
        end do
     end do
-    !$omp end do
 
-    !$omp workshare
     sumdrY = 0.d0
-    !$omp end workshare
     do n=iry1,ncons
 
        if (n.eq.iry_ias) cycle
 
-       !$omp do
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)
@@ -1725,11 +1595,9 @@ contains
              end do
           end do
        end do
-       !$omp end do nowait
 
     end do
 
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -1741,17 +1609,13 @@ contains
           end do
        end do
     end do
-    !$omp end do
     
-    !$omp workshare
     sumryv = 0.d0
-    !$omp end workshare
     do n = 1, nspecies
 
        if (n.eq.iias) cycle
 
        qxn = qx1+n-1
-       !$omp do
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)
@@ -1765,7 +1629,6 @@ contains
              end do
           end do
        end do
-       !$omp end do
 
     end do
 
@@ -1773,7 +1636,6 @@ contains
     qhn = qh1+n-1
     iryn = iry1+n-1
     
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -1787,13 +1649,11 @@ contains
           end do
        end do
     end do
-    !$omp end do
 
     ! ------- END y-direction -------
 
     ! ------- BEGIN z-direction -------
 
-    !$omp do
     do k=lo(3),hi(3)+1
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -1865,9 +1725,7 @@ contains
           end do
        end do
     end do
-    !$omp end do
 
-    !$omp do
     do k=lo(3),hi(3)+1
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -1933,9 +1791,7 @@ contains
           end do
        end do
     end do
-    !$omp end do
 
-    !$omp do
     do k=lo(3),hi(3)+1
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -2001,9 +1857,7 @@ contains
           end do
        end do
     end do
-    !$omp end do
 
-    !$omp do
     do k=lo(3),hi(3)+1
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -2072,7 +1926,6 @@ contains
           end do
        end do
     end do
-    !$omp end do
 
     do n = 1, nspecies
 
@@ -2081,7 +1934,6 @@ contains
        qxn = qx1+n-1
        iryn = iry1+n-1
 
-       !$omp do
        do k=lo(3),hi(3)+1
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)
@@ -2094,9 +1946,7 @@ contains
              end do
           end do
        end do
-       !$omp end do
 
-       !$omp do
        do k=lo(3),hi(3)+1
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)
@@ -2169,12 +2019,10 @@ contains
              end do
           end do
        end do
-       !$omp end do
     end do
 
     ! add z-direction rhs
 
-    !$omp do collapse(2)
     do n=2,iene
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)
@@ -2184,16 +2032,12 @@ contains
           end do
        end do
     end do
-    !$omp end do
     
-    !$omp workshare
     sumdrY = 0.d0
-    !$omp end workshare
     do n=iry1,ncons
 
        if (n.eq.iry_ias) cycle
 
-       !$omp do
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)
@@ -2202,11 +2046,9 @@ contains
              end do
           end do
        end do
-       !$omp end do nowait
 
     end do
     
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -2218,17 +2060,13 @@ contains
           end do
        end do
     end do
-    !$omp end do
     
-    !$omp workshare
     sumryv = 0.d0
-    !$omp end workshare
     do n = 1, nspecies
 
        if (n.eq.iias) cycle
 
        qxn = qx1+n-1
-       !$omp do
        do k=lo(3),hi(3)
           do j=lo(2),hi(2)
              do i=lo(1),hi(1)
@@ -2242,7 +2080,6 @@ contains
              end do
           end do
        end do
-       !$omp end do
 
     end do
 
@@ -2250,7 +2087,6 @@ contains
     qhn = qh1+n-1
     iryn = iry1+n-1
     
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -2264,12 +2100,10 @@ contains
           end do
        end do
     end do
-    !$omp end do
 
     ! ------- END z-direction -------
     
     ! add kinetic energy
-    !$omp do
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -2280,9 +2114,6 @@ contains
           end do
        end do
     end do
-    !$omp end do
-
-    !$omp end parallel
 
     deallocate(Hg,dpy,dxe,dpe,vsp,M8p)
     deallocate(sumdrY,sumryv,gradp)
@@ -2332,9 +2163,6 @@ contains
        dxinv(i) = 1.0d0 / dx(i)
     end do
 
-    !$omp parallel private(i,j,k,iwrk,c,rwrk,Cv,Cp,Tt,X,gamma) &
-    !$omp private(courx,coury,courz) reduction(max:courno)
-    !$omp do collapse(2)
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
           do i=lo(1),hi(1)
@@ -2355,8 +2183,6 @@ contains
           end do
        end do
     end do
-    !$omp end do
-    !$omp end parallel
 
   end subroutine comp_courno_3d
 

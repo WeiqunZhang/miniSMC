@@ -3,6 +3,7 @@ module advance_module
   use bl_error_module
   use kernels_module
   use multifab_module
+  use threadbox_module
   use time_module
   use transport_properties
   use variables_module
@@ -27,7 +28,7 @@ contains
     double precision,  intent(in   ) :: dx(3)
     integer, intent(in) :: istep
 
-    call multifab_setval(Unew, 0.d0, .true.)
+    call tb_multifab_setval(Unew, 0.d0, .true.)
 
     call dUdt(U, Uprime, Q, mu, xi, lam, Ddiag, dx, courno, istep)
     call set_dt(dt, courno, istep)
@@ -130,16 +131,18 @@ contains
 
     nc = ncomp(U1)
 
+    !$omp parallel private(i,j,k,m,n,lo,hi,u1p,u2p,upp)
     do n=1,nfabs(U1)
+
+       if (.not.tb_worktodo(n)) cycle
 
        u1p => dataptr(U1,    n)
        u2p => dataptr(U2,    n)
        upp => dataptr(Uprime,n)
 
-       lo = lwb(get_box(Uprime,n))
-       hi = upb(get_box(Uprime,n))
+       lo = tb_get_valid_lo(n)
+       hi = tb_get_valid_hi(n)
 
-       !$omp parallel do private(i,j,k,m) collapse(3)
        do m = 1, nc
           do k = lo(3),hi(3)
              do j = lo(2),hi(2)
@@ -149,8 +152,8 @@ contains
              end do
           end do
        end do
-       !$omp end parallel do
     end do
+    !$omp end parallel
 
   end subroutine update_rk3
 
@@ -191,7 +194,7 @@ contains
     call multifab_fill_boundary(U)
     wt_fillboundary = wt_fillboundary + (parallel_wtime()-wt1)
 
-    call multifab_setval(Uprime, 0.d0)
+    call tb_multifab_setval(Uprime, 0.d0)
 
     !
     ! Calculate primitive variables based on U
@@ -237,7 +240,11 @@ contains
     !
     ! Hyperbolic and Transport terms
     !
+    !$omp parallel private(n,lo,hi,up,ulo,uhi,upp,uplo,uphi) &
+    !$omp private(qp,qlo,qhi,mup,xip,lamp,Ddp)
     do n=1,nfabs(Q)
+
+       if (.not.tb_worktodo(n)) cycle
 
        up => dataptr(U,n)
        upp=> dataptr(Uprime,n)
@@ -254,8 +261,8 @@ contains
        uplo = lbound(upp)
        uphi = ubound(upp)
 
-       lo = lwb(get_box(Q,n))
-       hi = upb(get_box(Q,n))
+       lo = tb_get_valid_lo(n)
+       hi = tb_get_valid_hi(n)
 
        call narrow_diffterm_3d(lo,hi,dx,qp,qlo(1:3),qhi(1:3),upp,uplo(1:3),uphi(1:3), &
             mup,xip,lamp,Ddp)
@@ -264,6 +271,7 @@ contains
             upp,uplo(1:3),uphi(1:3))
 
     end do
+    !$omp end parallel
     wt2 = parallel_wtime()
     wt_hypdiff = wt_hypdiff + (wt2-wt1)
 
@@ -281,18 +289,23 @@ contains
     integer :: n, lo(3), hi(3), qlo(4), qhi(4)
     double precision, pointer :: qp(:,:,:,:)
 
+    !$omp parallel private(n, lo, hi, qlo, qhi, qp) &
+    !$omp reduction(max:courno)
     do n=1,nfabs(Q)
+
+       if (.not.tb_worktodo(n)) cycle
 
        qp => dataptr(Q,n)
        qlo = lbound(qp)
        qhi = ubound(qp)
 
-       lo = lwb(get_box(Q,n))
-       hi = upb(get_box(Q,n))
+       lo = tb_get_valid_lo(n)
+       hi = tb_get_valid_hi(n)
        
        call comp_courno_3d(lo,hi,dx,qp,qlo(1:3),qhi(1:3),courno)
 
     end do
+    !$omp end parallel
   end subroutine compute_courno
 
 end module advance_module

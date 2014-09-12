@@ -10,6 +10,7 @@ subroutine smc()
   use probin_module
   use runtime_init_module
   use smcdata_module
+  use threadbox_module
   use time_module
   use variables_module
 
@@ -96,6 +97,7 @@ subroutine smc()
   wt2 = parallel_wtime()
 
   call destroy_smcdata()
+  call destroy_threadbox()
 
   call destroy(U)
 

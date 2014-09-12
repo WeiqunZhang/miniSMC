@@ -70,6 +70,15 @@ list of selected runtime parameters and default values.
   and the number of MPI tasks.  Ideally, you would like to have one
   box for each MPI task to minimize the communication cost.
 
+* tb_split_dim = 2
+
+  This determines how domain decomposition in some subroutines is done
+  for threads.  When OpenMP is used, each box is "virtually" divided
+  into "nthreads" boxes and each OpenMP thread works on one
+  thread-box.  This parameter can be either 2 or 3. When it is 2, the
+  domain decomposition is in y and z-directions; when it is 3, the
+  domain decomposition is in 3D.
+
 * verbose = 0
 
   This determines verbosity.

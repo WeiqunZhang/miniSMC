@@ -2,6 +2,7 @@ module initialize_module
 
   use multifab_module
   use variables_module
+  use threadbox_module
 
   implicit none
 
@@ -51,6 +52,8 @@ contains
     dx(3) = (prob_hi(3)-prob_lo(3)) / n_cellz
 
     ng = stencil_ng
+
+    call build_threadbox(la,ng)
 
     call multifab_build(U,la,ncons,ng)
   

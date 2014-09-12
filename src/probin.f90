@@ -27,6 +27,10 @@ module probin_module
   integer, save, public :: n_cellx = -1
   integer, save, public :: n_celly = -1
   integer, save, public :: n_cellz = -1
+  integer, save, public :: tb_split_dim = 2
+  logical, save, public :: tb_collapse_boxes = .false.
+  integer, save, public :: tb_idim_more = 2
+  integer, save, public :: tb_idim_less = 1
 
   ! These will be allocated and defined below
   logical,    allocatable, save, public :: pmask(:)
@@ -64,6 +68,10 @@ module runtime_init_module
   namelist /probin/ n_cellx
   namelist /probin/ n_celly
   namelist /probin/ n_cellz
+  namelist /probin/ tb_split_dim
+  namelist /probin/ tb_collapse_boxes
+  namelist /probin/ tb_idim_more
+  namelist /probin/ tb_idim_less
 
   private
 

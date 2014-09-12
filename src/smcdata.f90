@@ -22,6 +22,7 @@ contains
     use variables_module, only : ncons, nprim
     use chemistry_module, only : nspecies
     use derivative_stencil_module, only : stencil_ng
+    use threadbox_module, only : tb_multifab_setval
 
     implicit none
 
@@ -31,7 +32,7 @@ contains
     call multifab_build(Unew,   la, ncons, stencil_ng)
 
     call multifab_build(Q, la, nprim, stencil_ng)
-    call multifab_setval(Q, 0.d0, .true.)
+    call tb_multifab_setval(Q, 0.d0, .true.)
 
     call multifab_build(mu , la, 1, stencil_ng)
     call multifab_build(xi , la, 1, stencil_ng)
