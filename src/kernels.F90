@@ -2177,20 +2177,30 @@ contains
     double precision,intent(in):: q ( qlo(1): qhi(1), qlo(2): qhi(2), qlo(3): qhi(3),nprim)
     double precision           :: up(uplo(1):uphi(1),uplo(2):uphi(2),uplo(3):uphi(3),ncons)
 
-    integer :: iwrk, i,j,k
-    double precision :: Yt(nspecies), wdot(nspecies), rwrk
+    integer :: iwrk, i,j,k,n,np
+    double precision :: Yt(lo(1):hi(1),nspecies), wdot(lo(1):hi(1),nspecies), rwrk
 
-    !$omp parallel private (iwrk,i,j,k,Yt,wdot,rwrk)
+    np = hi(1) - lo(1) + 1
+
+    !$omp parallel private (iwrk,i,j,k,n,Yt,wdot,rwrk)
     !$omp do collapse(2)
     do k=lo(3),hi(3)
        do j=lo(2),hi(2)
-          do i=lo(1),hi(1)
 
-             Yt = q(i,j,k,qy1:qy1+nspecies-1)
-             call ckwyr(q(i,j,k,qrho), q(i,j,k,qtemp), Yt, iwrk, rwrk, wdot)
-             up(i,j,k,iry1:iry1+nspecies-1) = wdot * molecular_weight
-
+          do n=1, nspecies
+             do i=lo(1),hi(1)
+                Yt(i,n) = q(i,j,k,qy1+n-1)
+             end do
           end do
+
+          call vckwyr(np, q(lo(1),j,k,qrho), q(lo(1),j,k,qtemp), Yt, iwrk, rwrk, wdot)
+
+          do n=1, nspecies
+             do i=lo(1),hi(1)
+                up(i,j,k,iry1+n-1) = wdot(i,n) * molecular_weight(n)
+             end do
+          end do
+          
        end do
     end do
     !$omp end do
