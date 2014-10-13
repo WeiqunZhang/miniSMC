@@ -15,7 +15,7 @@ can also be built with pure MPI, or pure OpenMP, or neither.
 GNU make is used to build the code.  The following options can be
 specified in the GNUmakefile:
 
-* MPI := t 
+* MPI :=  
   This determines whether we are using the Message Passing
   Interface (MPI) library.  Leaving this option empty will disable
   MPI.  If MPI is enabled, you need to specify how to link to the MPI
@@ -23,7 +23,7 @@ specified in the GNUmakefile:
   used.  Or you can set "mpi_include_dir", "mpi_lib_dir", and
   "mpi_libraries" to appropriate values in GNUmakefile.
 
-* OMP := 
+* OMP := t
   This determines whether we are using OpenMP.  Leaving this option
   empty disables OpenMP.
 

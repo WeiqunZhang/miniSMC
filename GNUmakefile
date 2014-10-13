@@ -1,5 +1,5 @@
-#MPI := 
-MPI := t
+MPI := 
+#MPI := t
 
 #OMP := 
 OMP := t
