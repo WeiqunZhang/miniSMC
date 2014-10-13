@@ -27,12 +27,12 @@ specified in the GNUmakefile:
   This determines whether we are using OpenMP.  Leaving this option
   empty disables OpenMP.
 
-* NDEBUG := 
+* NDEBUG := t
   This option determines whether we compile with support for debugging
   (usually also enabling some runtime checks). Setting NDEBUG := t
   turns off debugging.
 
-* COMP := GNU
+* COMP := Intel
   Set this to your compiler of choice (e.g., GNU).  Specific options
   for a certain compiler are stored in the comps/$(COMP).mak file.   
 
@@ -52,13 +52,14 @@ specified in the GNUmakefile:
 * MKVERBOSE := t
   This determines the verbosity of the building process.
 
-To build an executable, type "make" in the SMC directory.  The
-executable will have a name like main.GNU.debug.mpi.exe depending
-on the compiler and some other options specified in the GNUmakefile.
-There are some other options provided by the GNUmakefile.  You can
-type "make TAGS" or "make tags" to generate tag file for Email or vi.
-You can type "make clean" or "make realclean" to remove files
-generated during the make process.
+To build an executable, type "make" in the SMC directory.  Note that
+the above options can also be specified in a command line such as
+"make MPI=t MIC=t NDEBUG= ".  The executable will have a name like
+main.GNU.debug.mpi.exe depending on the compiler and some other
+options specified in the GNUmakefile.  There are some other options
+provided by the GNUmakefile.  You can type "make TAGS" or "make tags"
+to generate tag file for Email or vi.  You can type "make clean" or
+"make realclean" to remove files generated during the make process.
 
 Runtime parameters can be specified in the inputs_SMC file, which must
 be placed in the directory where the executable is run.  Below are a

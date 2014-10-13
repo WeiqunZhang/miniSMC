@@ -8,8 +8,8 @@ NDEBUG := t
 #NDEBUG := 
 
 ### Edit compiler options in comps/$(COMP).mak
-COMP := GNU
-# COMP := Intel
+# COMP := GNU
+COMP := Intel
 
 K_USE_AUTOMATIC := t
 
