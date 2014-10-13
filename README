@@ -19,8 +19,8 @@ specified in the GNUmakefile:
   This determines whether we are using the Message Passing
   Interface (MPI) library.  Leaving this option empty will disable
   MPI.  If MPI is enabled, you need to specify how to link to the MPI
-  library.  You can set USE_MPI_WRAPPERS := t, then mpif90 will be
-  used.  Or you can set "mpi_include_dir", "mpi_lib_dir", and
+  library.  You can set USE_MPI_WRAPPERS := t, then mpif90 or mpiifort
+  will be used.  Or you can set "mpi_include_dir", "mpi_lib_dir", and
   "mpi_libraries" to appropriate values in GNUmakefile.
 
 * OMP := t
@@ -56,10 +56,11 @@ To build an executable, type "make" in the SMC directory.  Note that
 the above options can also be specified in a command line such as
 "make MPI=t MIC=t NDEBUG= ".  The executable will have a name like
 main.GNU.debug.mpi.exe depending on the compiler and some other
-options specified in the GNUmakefile.  There are some other options
-provided by the GNUmakefile.  You can type "make TAGS" or "make tags"
-to generate tag file for Email or vi.  You can type "make clean" or
-"make realclean" to remove files generated during the make process.
+options specified in the GNUmakefile or command line.  There are some
+other options provided by the GNUmakefile.  You can type "make TAGS"
+or "make tags" to generate tag file for Emacs or vi.  You can type
+"make clean" or "make realclean" to remove files generated during the
+make process.
 
 Runtime parameters can be specified in the inputs_SMC file, which must
 be placed in the directory where the executable is run.  Below are a
