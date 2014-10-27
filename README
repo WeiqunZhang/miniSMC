@@ -118,6 +118,29 @@ it without "COLLAPSE".
 
 More information about SMC can be found in the paper "High-Order
 Algorithms for Compressible Reacting Flow with Complex Chemistry" by
-M. Emmett, W. Zhang, and J.B. Bell
-(http://arxiv.org/abs/1309.7327). If you have any questions, please
-contact Weiqun Zhang (WeiqunZhang@lbl.gov).
+M. Emmett, W. Zhang, and J.B. Bell (http://arxiv.org/abs/1309.7327),
+and in "Optimizing for Navier-Stokes Equations" by Antonio Valles and
+Weiqun Zhang (Chapter 4 of "High Performance Parallelism Pearls:
+Multicore and Many-core Programming Approaches", James Reinders and
+Jim Jeffers, published by Morgan Kaufmann, 2014).  If you have any
+questions, please contact Weiqun Zhang (WeiqunZhang@lbl.gov).
+
+**********************************************************************
+
+As noted in the book, the best performance shown on Figure 4.19 for
+the Intel Xeon Phi coprocessor is 12.99 seconds, and we found close to
+publication time that a few additional Fortran compiler options allow
+us to do better and achieve 9.11 seconds for the coprocessor (1.43x
+improvement vs . Figure 4.19) while keeping the processor performance
+the same. The compiler options for the improved performance are:
+-fno-alias -noprec-div -no-prec-sqrt -fimf-precision=low
+-fimf-domain-exclusion=15 -align array64byte -opt-assumesafe-padding
+-opt-streaming-stores always -opt-streaming-cache-evict=0.
+
+These new best results on coprocessor use -1, 16, 16 for the thread
+blocking specified in inputs_SMC file and SIMD directives are no
+longer needed in kernels.F90 file when using -fno-alias compiler
+option.  The chapter discusses Figure 4.19 as best results for
+coprocessor.
+
+The files here reflect all these changes for higher performance.
